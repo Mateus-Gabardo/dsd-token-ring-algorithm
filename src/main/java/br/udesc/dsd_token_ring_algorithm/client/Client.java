@@ -8,17 +8,16 @@ import br.udesc.dsd_token_ring_algorithm.utils.CommunicationUtils;
 
 public class Client {
     private String serverIP;
-    private int serverPort;
     private Socket clientSocket;
+    private final int PORT = 80;
 
     public Client(String serverIP, int serverPort) {
         this.serverIP = serverIP;
-        this.serverPort = serverPort;
     }
 
     public void start() {
         try {
-            clientSocket = new Socket(serverIP, serverPort);
+            clientSocket = new Socket(serverIP, PORT);
 
             String receivedData = CommunicationUtils.receive(clientSocket);
             String[] dataParts = receivedData.split(" ");
