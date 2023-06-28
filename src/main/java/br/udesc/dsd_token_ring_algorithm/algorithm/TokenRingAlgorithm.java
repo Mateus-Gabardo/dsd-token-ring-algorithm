@@ -1,5 +1,6 @@
 package br.udesc.dsd_token_ring_algorithm.algorithm;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -13,6 +14,7 @@ public class TokenRingAlgorithm {
     public TokenRingAlgorithm(int initialPlayer, int numPlayers, ReentrantLock lock) {
         this.currentPlayer = initialPlayer;
         this.lock = lock;
+        players = new ArrayList<PlayerHandler>();
         initializePlayers(numPlayers);
     }
 
