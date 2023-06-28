@@ -24,7 +24,12 @@ public class App {
     }
 
     private static void startServer() {
-        Server server = new Server();
+    	Scanner scanner = new Scanner(System.in);
+    	
+    	System.out.print("Digite o numero de jogadores: ");
+        int jogadores = scanner.nextInt();
+        
+        Server server = new Server(jogadores);
         server.start();
     }
 
