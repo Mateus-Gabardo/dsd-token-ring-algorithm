@@ -1,6 +1,7 @@
 package br.udesc.dsd_token_ring_algorithm.server;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Server {
-	private static final int PORT = 1234;
+	private static final int PORT = 80;
 
 	private ServerSocket serverSocket;
 	private List<PlayerHandler> players;
@@ -28,7 +29,9 @@ public class Server {
 	public void start() {
 		try {
 			serverSocket = new ServerSocket(PORT);
-			System.out.println("Servidor iniciado na porta " + PORT);
+			serverSocket.setReuseAddress(true);
+			InetAddress ipCon = InetAddress.getLocalHost();
+			System.out.println("Servidor iniciado. IP:"+ ipCon.getHostAddress() +". Aguardando conexão...");
 
 			Condition tokenPassed = lock.newCondition();
 
