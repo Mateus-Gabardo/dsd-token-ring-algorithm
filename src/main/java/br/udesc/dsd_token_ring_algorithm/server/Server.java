@@ -42,7 +42,7 @@ public class Server {
 
 			// Inicia o jogo
 			System.out.println("Número a ser adivinhado: " + secretNumber);
-			players.get(0).send("START " + secretNumber);
+			players.get(0).send("TOKEN");
 
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -15,6 +15,7 @@ public class Client {
     private PrintWriter writer;
     private BufferedReader reader;
 	private final int PORT = 80;
+	private String palpite = null;
 
 	public Client(String serverIP) {
 		this.serverIP = serverIP;
@@ -27,15 +28,21 @@ public class Client {
 			writer = new PrintWriter(clientSocket.getOutputStream(), true);
 
 			System.out.println("Conexão estabelecida com o servidor " + serverIP);
-			System.out.println("Aguardando instruções do servidor...");
-
+			enviaPalpite();
+			
 			while (true) {
 				String receivedData = reader.readLine();
 				String[] dataParts = receivedData.split(" ");
 
-				if (dataParts[0].equals("START")) {
-					int secretNumber = Integer.parseInt(dataParts[1]);
-					handleStart(secretNumber);
+				if (dataParts[0].equals("TOKEN")) {
+					if(palpite != null) {
+						writer.println("TOKEN " + palpite);
+						this.palpite = null;
+						System.out.println("Palpite enviado");
+						enviaPalpite();
+					} else {
+						writer.println("TOKEN");
+					}
 				}
 			}
 
@@ -46,15 +53,11 @@ public class Client {
 		}
 	}
 	
-    private void handleStart(int secretNumber) throws IOException {
+    private void enviaPalpite() throws IOException {
         Scanner scanner = new Scanner(System.in);
-        System.out.print("Digite seu palpite: ");
+        System.out.print("Digite um palpite: ");
         int guess = scanner.nextInt();
-        sendGuess(guess);
-    }
-
-    private void sendGuess(int guess) {
-        writer.println("GUESS " + guess);
+        this.palpite = String.valueOf(guess);
     }
 
     private void closeConnection() {

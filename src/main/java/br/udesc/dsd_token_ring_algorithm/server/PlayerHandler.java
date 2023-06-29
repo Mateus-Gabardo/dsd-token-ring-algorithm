@@ -12,7 +12,6 @@ public class PlayerHandler extends Thread {
     private Socket clientSocket;
     private PrintWriter writer;
     private BufferedReader reader;
-    private boolean hasToken;
     
     private int playerId;
     private Server server;
@@ -20,6 +19,7 @@ public class PlayerHandler extends Thread {
     public PlayerHandler(Socket clientSocket, int playerId, int secretNumber, Server server) {
         this.clientSocket = clientSocket;
         this.playerId = playerId;
+        this.server = server;
         try {
             reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             writer = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -46,31 +46,25 @@ public class PlayerHandler extends Thread {
     }
     
     private void handleToken(String[] dataParts) {
-        if (hasToken) {
-            // Executa a região crítica
-            System.out.println("Jogador " + playerId + " executando a região crítica.");
-            if (dataParts[0].equals("GUESS")) {
-                int guess = Integer.parseInt(dataParts[1]);
-                server.checkGuess(playerId, guess);
-            }
-
-            // Passa o token para o próximo jogador
-            int numPlayers = this.server.getPlayers().size();
-            int nextPlayer = (playerId + 1) % numPlayers;
-            this.server.getPlayers().get(nextPlayer).sendToken();
-        }
-    }
+		// Executa a região crítica
+	    System.out.println("Jogador " + playerId + " executando a região crítica.");
+	    if(dataParts.length > 1) {
+	    	int guess = Integer.parseInt(dataParts[1]);
+	    	server.checkGuess(playerId, guess);
+	    }
+	
+	    // Passa o token para o próximo jogador
+	    int numPlayers = this.server.getPlayers().size();
+	    int nextPlayer = (playerId + 1) % numPlayers;
+	    this.server.getPlayers().get(nextPlayer).sendToken();
+	}
 
     public void send(String message) throws IOException {
         CommunicationUtils.send(clientSocket, message);
     }
-    public void setToken(boolean hasToken) {
-        this.hasToken = hasToken;
-    }
     
     public void sendToken() {
         writer.println("TOKEN");
-        hasToken = true;
     }
 }
 
