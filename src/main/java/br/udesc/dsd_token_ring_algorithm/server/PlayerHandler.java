@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.concurrent.locks.ReentrantLock;
 
 import br.udesc.dsd_token_ring_algorithm.utils.CommunicationUtils;
 
@@ -15,6 +16,7 @@ public class PlayerHandler extends Thread {
     
     private int playerId;
     private Server server;
+    private ReentrantLock recurse = new ReentrantLock();
 
     public PlayerHandler(Socket clientSocket, int playerId, int secretNumber, Server server) {
         this.clientSocket = clientSocket;
@@ -36,8 +38,10 @@ public class PlayerHandler extends Thread {
                 String[] dataParts = receivedData.split(" ");
 
                 if (dataParts[0].equals("TOKEN")) {
-                	/// entra na zona critica
+                	/// Entra na zona critica
+                	recurse.lock();
                     handleToken(dataParts);
+                    recurse.unlock();
                 }
             }
         } catch (IOException e) {
