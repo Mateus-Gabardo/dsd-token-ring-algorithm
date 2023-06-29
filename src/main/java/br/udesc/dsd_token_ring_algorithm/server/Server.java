@@ -33,11 +33,9 @@ public class Server {
 			InetAddress ipCon = InetAddress.getLocalHost();
 			System.out.println("Servidor iniciado. IP:"+ ipCon.getHostAddress() +". Aguardando conexão...");
 
-			Condition tokenPassed = lock.newCondition();
-
 			for (int i = 0; i < currentPlayer; i++) {
 				Socket clientSocket = serverSocket.accept();
-				PlayerHandler player = new PlayerHandler(clientSocket, i, currentPlayer, lock, tokenPassed, secretNumber);
+				PlayerHandler player = new PlayerHandler(clientSocket, i, secretNumber, this);
 				players.add(player);
 				player.start();
 			}
@@ -50,4 +48,17 @@ public class Server {
 			e.printStackTrace();
 		}
 	}
+	
+	public List<PlayerHandler> getPlayers(){
+		return this.players;
+	}
+	
+	public synchronized void checkGuess(int playerId, int guess) {
+        if (guess == secretNumber) {
+            System.out.println("Jogador " + playerId + " acertou o número!");
+            // Encerrar o jogo ou realizar outras ações desejadas
+        } else {
+            System.out.println("Jogador " + playerId + " tentou adivinhar o número " + guess + ", mas está incorreto.");
+        }
+    }
 }

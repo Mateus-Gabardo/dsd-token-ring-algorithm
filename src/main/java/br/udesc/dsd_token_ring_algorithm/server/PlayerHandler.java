@@ -1,82 +1,63 @@
 package br.udesc.dsd_token_ring_algorithm.server;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
-import br.udesc.dsd_token_ring_algorithm.algorithm.TokenRingAlgorithm;
 
 import br.udesc.dsd_token_ring_algorithm.utils.CommunicationUtils;
 
 public class PlayerHandler extends Thread {
     private Socket clientSocket;
-    private int playerId;
-    private int numPlayers;
+    private PrintWriter writer;
+    private BufferedReader reader;
     private boolean hasToken;
-    private final ReentrantLock lock;
-    private final Condition tokenPassed;
-    private int secretNumber;
+    
+    private int playerId;
+    private Server server;
 
-    public PlayerHandler(Socket clientSocket, int playerId, int numPlayers, ReentrantLock lock, Condition tokenPassed, int secretNumber) {
+    public PlayerHandler(Socket clientSocket, int playerId, int secretNumber, Server server) {
         this.clientSocket = clientSocket;
         this.playerId = playerId;
-        this.numPlayers = numPlayers;
-        this.hasToken = (playerId == 0); // O primeiro jogador recebe o token inicialmente
-        this.lock = lock;
-        this.tokenPassed = tokenPassed;
-        this.secretNumber = secretNumber;
+        try {
+            reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            writer = new PrintWriter(clientSocket.getOutputStream(), true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void run() {
-        try {
-            String clientAddress = clientSocket.getInetAddress().getHostAddress();
-            System.out.println("Novo jogador conectado: " + clientAddress);
-
-            TokenRingAlgorithm tokenRingAlgorithm = new TokenRingAlgorithm(playerId, numPlayers, lock);
-
+    	try {
             while (true) {
-                lock.lock();
-                try {
-                    while (!hasToken) {
-                        tokenPassed.await(); // Aguarda até receber o token
-                    }
+                String receivedData = reader.readLine();
+                String[] dataParts = receivedData.split(" ");
 
-                    String receivedData = CommunicationUtils.receive(clientSocket);
-                    String[] dataParts = receivedData.split(" ");
-
-                    if (dataParts[0].equals("GUESS")) {
-                        int guess = Integer.parseInt(dataParts[1]);
-                        String response;
-
-                        if (guess == secretNumber) {
-                            response = "CORRECT";
-                            System.out.println("Jogador " + playerId + " adivinhou corretamente o número!");
-                        } else {
-                            response = "INCORRECT";
-                            System.out.println("Jogador " + playerId + " tentou " +
-                                    "adivinhar o número " + guess + ", mas está incorreto.");
-                        }
-
-                        CommunicationUtils.send(clientSocket, response);
-
-                        // Passa o token para o próximo jogador
-                        tokenRingAlgorithm.passToken();
-
-                    } else if (dataParts[0].equals("TOKEN")) {
-                        // Jogador atual passou o token
-                        hasToken = false;
-                        tokenRingAlgorithm.receiveToken();
-                        tokenPassed.signalAll(); // Notifica os jogadores esperando pelo token
-                    }
-                } finally {
-                    lock.unlock();
+                if (dataParts[0].equals("TOKEN")) {
+                	/// entra na zona critica
+                    handleToken(dataParts);
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        }
+    }
+    
+    private void handleToken(String[] dataParts) {
+        if (hasToken) {
+            // Executa a região crítica
+            System.out.println("Jogador " + playerId + " executando a região crítica.");
+            if (dataParts[0].equals("GUESS")) {
+                int guess = Integer.parseInt(dataParts[1]);
+                server.checkGuess(playerId, guess);
+            }
+
+            // Passa o token para o próximo jogador
+            int numPlayers = this.server.getPlayers().size();
+            int nextPlayer = (playerId + 1) % numPlayers;
+            this.server.getPlayers().get(nextPlayer).sendToken();
         }
     }
 
@@ -85,6 +66,11 @@ public class PlayerHandler extends Thread {
     }
     public void setToken(boolean hasToken) {
         this.hasToken = hasToken;
+    }
+    
+    public void sendToken() {
+        writer.println("TOKEN");
+        hasToken = true;
     }
 }
 

@@ -35,12 +35,11 @@ public class App {
 
     private static void startClient() {
         Scanner scanner = new Scanner(System.in);
-        final int PORT = 80;
 
         System.out.print("Digite o endereço IP do servidor: ");
         String serverIP = scanner.nextLine();
 
-        Client client = new Client(serverIP, PORT);
+        Client client = new Client(serverIP);
         client.start();
     }
 }
