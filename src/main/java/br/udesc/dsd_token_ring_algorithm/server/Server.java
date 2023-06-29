@@ -49,16 +49,24 @@ public class Server {
 		}
 	}
 	
+	public void encerarJogo() throws IOException {
+		for(PlayerHandler player : players) {
+			player.send("TOKEN" + "STOP" + String.valueOf(player.getPlayerId()));
+		}
+	}
+	
 	public List<PlayerHandler> getPlayers(){
 		return this.players;
 	}
 	
-	public synchronized void checkGuess(int playerId, int guess) {
+	public synchronized boolean checkGuess(int playerId, int guess) throws IOException {
         if (guess == secretNumber) {
             System.out.println("Jogador " + playerId + " acertou o número!");
-            // Encerrar o jogo ou realizar outras ações desejadas
+            this.encerarJogo();
+            return true;
         } else {
             System.out.println("Jogador " + playerId + " tentou adivinhar o número " + guess + ", mas está incorreto.");
+            return false;
         }
     }
 }

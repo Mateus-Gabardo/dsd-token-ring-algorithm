@@ -49,7 +49,7 @@ public class PlayerHandler extends Thread {
         }
     }
     
-    private void handleToken(String[] dataParts) {
+    private void handleToken(String[] dataParts) throws IOException {
 		// Executa a região crítica
 	    System.out.println("Jogador " + playerId + " executando a região crítica.");
 	    if(dataParts.length > 1) {
@@ -62,6 +62,10 @@ public class PlayerHandler extends Thread {
 	    int nextPlayer = (playerId + 1) % numPlayers;
 	    this.server.getPlayers().get(nextPlayer).sendToken();
 	}
+    
+    public int getPlayerId() {
+    	return this.playerId;
+    }
 
     public void send(String message) throws IOException {
         CommunicationUtils.send(clientSocket, message);

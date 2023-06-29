@@ -44,6 +44,13 @@ public class Client {
 						writer.println("TOKEN");
 					}
 				}
+				
+				if(dataParts.length > 1) {
+					if(dataParts[1] == "STOP") {
+						System.out.println("Jogo encerrado!\n O vencedor foi o jogador " + dataParts[2]);
+						clientSocket.close();
+					}
+				}
 			}
 
 		} catch (IOException e) {
